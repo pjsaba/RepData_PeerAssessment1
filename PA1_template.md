@@ -1,26 +1,21 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-author: By Paulo José Souza de Assunção (paulo.assuncao@gmail.com)
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
+By Paulo JosÃ© Souza de AssunÃ§Ã£o (paulo.assuncao@gmail.com)  
 
-```{r setoptions, echo=FALSE}
-options(scipen = 1, digits = 2)
-```
+
 <br/>
 
 ### Loading and preprocessing the data
 
-```{r preprocessing}
+
+```r
 # Reading raw data from file
 raw_data <- read.csv("./data/activity.csv", header = TRUE, sep = ",")
 ```
 
 ### What is mean total number of steps taken per day?
 
-```{r mean_and_median}
+
+```r
 data <- transform(raw_data, date = factor(date))
 
 # Calculating the 'Total Number of Steps by day'
@@ -28,19 +23,24 @@ total_steps_by_day <- tapply(data$steps, data$date, sum)
 
 # Plotting a histogram for 'Total Number of Steps by Day'
 hist(total_steps_by_day, xlab = "Total number of steps by day", col = "cyan", main = "Steps by day Histogram")
+```
 
+![](PA1_template_files/figure-html/mean_and_median-1.png) 
+
+```r
 # Calculating Mean and Median to 'Total Number of Steps by Day'
 mean_steps <- mean(total_steps_by_day, na.rm = "true")
 median_steps <- median(total_steps_by_day, na.rm = "true")
 ```
 
-Mean of steps of the total number of steps taken per day: **`r mean_steps`**
+Mean of steps of the total number of steps taken per day: **10766.19**
 
-Median of steps of the total number of steps taken per day: **`r median_steps`**
+Median of steps of the total number of steps taken per day: **10765**
 
 ### What is the average daily activity pattern?
 
-```{r average_interval, fig.width=12, fig.height=6}
+
+```r
 library(stringr)
 
 data <- raw_data[!is.na(raw_data$steps),]
@@ -54,26 +54,32 @@ mean_steps_by_interval <- data.frame(interval = str_pad(names(mean_steps_by_inte
 # Plotting Average Number of Steps by Interval  
 plot(mean_steps_by_interval$steps ~ mean_steps_by_interval$interval, type = "l", 
      xlab = "5-minute interval", ylab = "Average Number of Steps by Interval (averaged across all days)")
+```
 
+![](PA1_template_files/figure-html/average_interval-1.png) 
+
+```r
 # Finding the interval where average number of steps reachs its maximum value
 interval <- mean_steps_by_interval[mean_steps_by_interval$steps == max(mean_steps_by_interval$steps), ][1,1]
 ```
 
-The interval where average number of steps reachs its maximum value is: **`r interval`**
+The interval where average number of steps reachs its maximum value is: **0835**
 
 ### Inputing missing values
 
-```{r counting_missing_values}
+
+```r
 # Counting the number of missing values of original dataset
 missing_values <- raw_data[is.na(raw_data$steps),]
 total_missing_values <- nrow(missing_values)
 ```
 
-The total number of missing values in the dataset is: **`r total_missing_values`**
+The total number of missing values in the dataset is: **2304**
 
 Fixing raw dataset using average number of steps by interval (averaged across all days)...  
 
-```{r filling_missing_values}
+
+```r
 data <- raw_data[!is.na(raw_data$steps),]
 data <- transform(data, interval = factor(interval))
 
@@ -98,37 +104,43 @@ fixed_raw_data <- rbind(raw_data[!is.na(raw_data$steps),], fixed_raw_data)
 
 Plotting histogram and recalculating Mean and Median using fixed dataset...
 
-```{r mean_and_median_fixed_dataset}
+
+```r
 # Calculating the 'Total Number of Steps by days' (using 'fixed_raw_data' dataset)
 data <- transform(fixed_raw_data, date = factor(date))
 total_steps_by_day <- tapply(data$steps, data$date, sum)
 
 # Plotting a histogram to 'Total Number of Steps by Day'
 hist(total_steps_by_day, xlab = "Total number of steps by day", col = "cyan", main = "Steps by day Histogram")
+```
 
+![](PA1_template_files/figure-html/mean_and_median_fixed_dataset-1.png) 
+
+```r
 # Calculating Mean and Median to 'Total Number of Steps by Day'
 mean_steps <- mean(total_steps_by_day, na.rm = "true")
 median_steps <- median(total_steps_by_day, na.rm = "true")
 ```
 
-Mean of steps of the total number of steps taken per day: **`r mean_steps`**
+Mean of steps of the total number of steps taken per day: **10766.19**
 
-Median of steps of the total number of steps taken per day: **`r median_steps`**
+Median of steps of the total number of steps taken per day: **10766.19**
 
 As we can see, mean value didn't change while median changed softly. 
 Generally (as expected) the inputed values raised up total daily number of steps but didn't have a major effect over statistical behaviour. Without them we already had a good sample to extract desired information. 
 
 ### Are there differences in activity patterns between weekdays and weekends?
 
-```{r weekdays, fig.height=10, fig.width=12}
+
+```r
 library(lattice)
 
 # Using function weekdays() to create a new field (day_of_week) 
 fixed_raw_data$day_of_week <- weekdays(as.Date(fixed_raw_data$date))
 
 # Setting Saturday and Sunday to 'weekend'. 
-# Note: 'sábado' is 'Saturday' and 'domingo' is 'Sunday' in Portuguese.
-fixed_raw_data$day_of_week[fixed_raw_data$day_of_week == "sábado" | 
+# Note: 'sÃ¡bado' is 'Saturday' and 'domingo' is 'Sunday' in Portuguese.
+fixed_raw_data$day_of_week[fixed_raw_data$day_of_week == "sÃ¡bado" | 
                            fixed_raw_data$day_of_week == "domingo"] <- "weekend"
 # Setting other days to 'weekday'
 fixed_raw_data$day_of_week[fixed_raw_data$day_of_week != "weekend"] <- "weekday"
@@ -168,3 +180,5 @@ mean_steps_by_int_dow <- mean_steps_by_int_dow[order(mean_steps_by_int_dow$inter
 xyplot(mean_steps_by_int_dow$steps ~ mean_steps_by_int_dow$interval | mean_steps_by_int_dow$day_of_week, 
        type = 'l', layout = c(1, 2), xlab = "5-minute interval", ylab = "Average Number of Steps by Interval")
 ```
+
+![](PA1_template_files/figure-html/weekdays-1.png) 
